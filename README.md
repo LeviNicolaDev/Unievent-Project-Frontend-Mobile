@@ -13,7 +13,7 @@ opção de tentar novamente. Respostas vazias da API permanecem vazias.
 ## Cadastro e confirmação de e-mail (M4)
 
 O cadastro mobile em `SignUpScreen.js` é institucional: exige endereço
-`@fatec.sp.gov.br`, instituição e confirmação de e-mail antes do login.
+`@fatec.sp.gov.br` ou `@aluno.cps.sp.gov.br`, instituição e confirmação de e-mail antes do login.
 Usa `POST /Aluno` e `POST /Auth/login-aluno`.
 
 Conforme o contrato informado na revisão, o cadastro externo em

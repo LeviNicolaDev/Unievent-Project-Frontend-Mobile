@@ -10,7 +10,7 @@ import { BLACK, ORANGE } from "../constants/theme";
 import { useAuth } from "../context/AuthContext";
 import { institutionsApi } from "../services/api";
 import { styles } from "../styles/globalStyles";
-import { normalizeBrazilianDateInput } from "../utils/dateFormat";
+import { maskBrazilianDateInput, normalizeBrazilianDateInput } from "../utils/dateFormat";
 import { pickProfilePhoto } from "../utils/photoPicker";
 
 export default function SignUpScreen({ theme, navigation, toggleTheme }) {
@@ -86,13 +86,13 @@ export default function SignUpScreen({ theme, navigation, toggleTheme }) {
       !instituicaoId
     ) {
       setError(
-        "Preencha nome, e-mail Fatec, instituição, data, senha e foto de perfil."
+        "Preencha nome, e-mail institucional, instituição, data, senha e foto de perfil."
       );
       return;
     }
 
-    if (!email.trim().toLowerCase().endsWith("@fatec.sp.gov.br")) {
-      setError("Use seu e-mail institucional @fatec.sp.gov.br.");
+    if (!/^[^@\s]+@(fatec\.sp\.gov\.br|aluno\.cps\.sp\.gov\.br)$/i.test(email.trim())) {
+      setError("Use seu e-mail institucional @fatec.sp.gov.br ou @aluno.cps.sp.gov.br.");
       return;
     }
 
@@ -188,6 +188,9 @@ export default function SignUpScreen({ theme, navigation, toggleTheme }) {
           />
 
           <Text style={styles.authLabel}>E-mail</Text>
+          <Text style={styles.authMiniWhite}>
+            Aceitamos @fatec.sp.gov.br e @aluno.cps.sp.gov.br.
+          </Text>
           <AuthInput
             icon="mail"
             keyboardType="email-address"
@@ -231,7 +234,7 @@ export default function SignUpScreen({ theme, navigation, toggleTheme }) {
           <AuthInput
             icon="calendar"
             keyboardType="numeric"
-            onChangeText={setDataNascimento}
+            onChangeText={(value) => setDataNascimento(maskBrazilianDateInput(value))}
             placeholder="dd/mm/aaaa"
             theme={signupInputTheme}
             value={dataNascimento}

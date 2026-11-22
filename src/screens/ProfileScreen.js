@@ -19,6 +19,7 @@ import { useEvents } from "../context/EventContext";
 import { styles } from "../styles/globalStyles";
 import {
   formatDateForInput,
+  maskBrazilianDateInput,
   normalizeBrazilianDateInput,
 } from "../utils/dateFormat";
 import { pickProfilePhoto } from "../utils/photoPicker";
@@ -344,7 +345,7 @@ function EditProfileModal({ visible, onClose, student, theme }) {
               label="Data de nascimento"
               icon="calendar"
               keyboardType="numeric"
-              onChangeText={setDataNascimento}
+              onChangeText={(value) => setDataNascimento(maskBrazilianDateInput(value))}
               placeholder="dd/mm/aaaa"
               theme={theme}
               value={dataNascimento}
