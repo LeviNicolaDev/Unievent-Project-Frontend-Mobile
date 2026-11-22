@@ -1,11 +1,36 @@
-# Sample Snack app
+﻿# Unievent Mobile
 
-Open the `App.js` file to start writing some code. You can preview the changes directly on your phone or tablet by scanning the **QR code** or use the iOS or Android emulators. When you're done, click **Save** and share the link!
+Aplicativo React Native com Expo para alunos. Instale com `npm ci` e execute
+`npm start` (offline) ou `npm run start:online`.
 
-When you're ready to see everything that Expo provides (or if you want to use your own editor) you can **Download** your project and use it with [expo cli](https://docs.expo.dev/get-started/installation/#expo-cli)).
+## Eventos de demonstração (M3)
 
-All projects created in Snack are publicly available, so you can easily share the link to this project via link, or embed it on a web page with the `<>` button.
+Sem token ou quando a sincronização falha, o catálogo exibe somente exemplos de
+`src/data/events.js`, identificados como Demonstração. Seus IDs usam `demo:` e
+não permitem inscrição, ingresso ou certificado real. Falhas exibem mensagem e
+opção de tentar novamente. Respostas vazias da API permanecem vazias.
 
-If you're having problems, you can tweet to us [@expo](https://twitter.com/expo) or ask in our [forums](https://forums.expo.dev/c/expo-dev-tools/61) or [Discord](https://chat.expo.dev/).
+## Cadastro e confirmação de e-mail (M4)
 
-Snack is Open Source. You can find the code on the [GitHub repo](https://github.com/expo/snack).
+O cadastro mobile em `SignUpScreen.js` é institucional: exige endereço
+`@fatec.sp.gov.br`, instituição e confirmação de e-mail antes do login.
+Usa `POST /Aluno` e `POST /Auth/login-aluno`.
+
+Conforme o contrato informado na revisão, o cadastro externo em
+`AuthService.CadastrarPublicoGeral` define `EmailConfirmado = true`, sem confirmação
+adicional obrigatória. Esse fluxo externo não está implementado nesta tela.
+Não aplicar a ele as instruções do cadastro institucional.
+
+## Pendências no repositório da API (M1 e M2)
+
+Este repositório não contém os 78 arquivos `.puml`, o Documento de Casos de Uso,
+`ParticipacaoService.cs` ou `AuthService.cs` citados na revisão.
+
+- M1: exportar SVG/PNG ao lado dos `.puml` e atualizar índices e links no repositório
+  da API, verificando a visualização normal do Markdown.
+- M2: corrigir `docs/diagramas-sequencia/04_inscricao_e_ingresso_mobile.puml`:
+  participação inexistente resulta em 404/falha; participação cancelada retorna
+  ingresso com `StatusInscricao = Cancelada`, sem permitir check-in.
+
+Os contratos acima foram fornecidos na revisão e precisam ser conferidos no
+código da API ao atualizar seus diagramas.

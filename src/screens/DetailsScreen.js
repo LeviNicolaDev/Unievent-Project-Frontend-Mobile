@@ -21,14 +21,23 @@ export default function DetailsScreen({
   const [registering, setRegistering] = useState(false);
   const { student } = useAuth();
   const {
-    events,
     getEventById,
     isFavorite,
     toggleFavorite,
     isRegistered,
     registerForEvent,
   } = useEvents();
-  const event = getEventById(route.params?.eventId) || events[0];
+  const event = getEventById(route.params?.eventId);
+  if (!event) {
+    return (
+      <Screen theme={theme} bg={isLight ? LIGHT_BG : BLACK}>
+        <Text style={{ color: theme.text }}>Evento indisponível. Volte à lista e tente novamente.</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <Text style={{ color: theme.text }}>Voltar aos eventos</Text>
+        </TouchableOpacity>
+      </Screen>
+    );
+  }
   const favorite = isFavorite(event.id);
   const registered = isRegistered(event.id);
   const isInstitutionOnly = event.publicoPermitido === "AlunosDaInstituicao";
@@ -42,6 +51,7 @@ export default function DetailsScreen({
     : "";
 
   async function handleTicketPress() {
+    if (event.isDemo) return;
     if (registered) {
       navigation.navigate("TicketQr", { eventId: event.id });
       return;
@@ -99,6 +109,11 @@ export default function DetailsScreen({
         </View>
 
         <EventImage e={event} big />
+        {event.isDemo ? (
+          <Text style={[styles.aboutText, { color: theme.soft }]}>
+            Demonstração: evento fictício. Inscrição e check-in indisponíveis.
+          </Text>
+        ) : null}
 
         <Text style={[styles.detailsTitle, { color: theme.text }]}>
           {event.title}
@@ -155,7 +170,7 @@ export default function DetailsScreen({
           {event.description}
         </Text>
 
-        <TouchableOpacity
+        {!event.isDemo ? <TouchableOpacity
           disabled={registering || isDifferentInstitution}
           style={[
             styles.garantedButton,
@@ -175,7 +190,7 @@ export default function DetailsScreen({
               ? "Ingresso garantido"
               : "Garantir ingresso"}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> : null}
         {restrictionMessage ? (
           <Text style={[styles.aboutText, { color: theme.soft }]}>
             {restrictionMessage}

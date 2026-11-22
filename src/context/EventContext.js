@@ -71,7 +71,7 @@ function attachCertificatesToEvents(events, certificates) {
 
 export function EventProvider({ children }) {
   const { student, token } = useAuth();
-  const [eventItems, setEventItems] = useState(fallbackEvents);
+  const [eventItems, setEventItems] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventsError, setEventsError] = useState(null);
   const [favoriteIds, setFavoriteIds] = useState([]);
@@ -96,6 +96,11 @@ export function EventProvider({ children }) {
     async function loadEvents() {
       setEventsLoading(true);
       setEventsError(null);
+      setEventItems([]);
+      setRegisteredIds([]);
+      setAttendedIds([]);
+      setCertificateIds([]);
+      setInstitutionFilters([]);
 
       try {
         if (!token) {
@@ -215,6 +220,10 @@ export function EventProvider({ children }) {
     async (eventId) => {
       const id = asId(eventId);
 
+      if (!getEventById(id) || getEventById(id).isDemo) {
+        throw new Error("Eventos de demonstração não permitem inscrição.");
+      }
+
       if (!token) {
         throw new Error("Faça login como aluno para garantir seu ingresso.");
       }
@@ -231,7 +240,7 @@ export function EventProvider({ children }) {
         current.includes(id) ? current : [...current, id]
       );
     },
-    [token]
+    [getEventById, token]
   );
 
   const hasAttended = useCallback(
@@ -302,6 +311,13 @@ export function EventProvider({ children }) {
     setEventsError(null);
 
     try {
+      if (!token) {
+        setEventItems(fallbackEvents);
+        setRegisteredIds([]);
+        setAttendedIds([]);
+        setCertificateIds([]);
+        return;
+      }
       const [apiEvents, apiCertificates] = await Promise.all([
         eventsApi.list(token, { instituicaoId: selectedInstitutionId }),
         certificatesApi.list(token),

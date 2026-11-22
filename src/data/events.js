@@ -23,7 +23,7 @@ export const categoryFilterMap = {
   Hackathon: ["Tecnologia"],
 };
 
-export const events = [
+const demoEvents = [
   {
     id: "1",
     title: "Tec Rock - 5ª edição",
@@ -164,3 +164,11 @@ export const events = [
     organizer: "Centro Acadêmico",
   },
 ];
+
+// IDs separados impedem colisões com eventos e favoritos de produção.
+export const events = demoEvents.map((event) => ({
+  ...event,
+  id: `demo:${event.id}`,
+  isDemo: true,
+  hasCertificate: false,
+}));

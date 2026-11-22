@@ -15,27 +15,40 @@ import { styles } from "../styles/globalStyles";
 export default function TicketQrScreen({ theme, navigation, route }) {
   const isLight = theme.mode === "light";
   const {
-    events,
     getEventById,
     hasAttended,
     hasIssuedCertificate,
     refreshEvents,
   } = useEvents();
   const { token } = useAuth();
-  const event = getEventById(route.params?.eventId) || events[0];
+  const event = getEventById(route.params?.eventId);
   const [ticketCode, setTicketCode] = useState(null);
   const [ticketError, setTicketError] = useState(null);
-  const attended = hasAttended(event.id);
+  const attended = event ? hasAttended(event.id) : false;
   const qrRead = attended;
-  const certificateIssued = hasIssuedCertificate(event.id);
+  const certificateIssued = event ? hasIssuedCertificate(event.id) : false;
 
   useEffect(() => {
     let active = true;
+    setTicketCode(null);
+    setTicketError(null);
+    if (!event || event.isDemo || !token) return;
     eventsApi.getTicket(event.id, token)
       .then((ticket) => active && setTicketCode(ticket.codigoIngresso ?? ticket.CodigoIngresso))
       .catch((error) => active && setTicketError(error.message));
     return () => { active = false; };
-  }, [event.id, token]);
+  }, [event?.id, event?.isDemo, token]);
+
+  if (!event || event.isDemo) {
+    return (
+      <Screen theme={theme} bg={isLight ? LIGHT_BG : BLACK}>
+        <Text style={{ color: theme.text }}>Ingresso indisponível. Atualize a lista de eventos.</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <Text style={{ color: theme.text }}>Voltar aos eventos</Text>
+        </TouchableOpacity>
+      </Screen>
+    );
+  }
 
   async function handleCertificatePress() {
     try {

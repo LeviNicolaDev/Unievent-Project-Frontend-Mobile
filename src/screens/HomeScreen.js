@@ -23,6 +23,7 @@ export default function HomeScreen({ theme, navigation, route, toggleTheme }) {
     eventsError,
     eventsLoading,
     filteredEvents,
+    refreshEvents,
     selectedCategory,
     selectedInstitutionId,
     setSelectedInstitutionId,
@@ -79,7 +80,17 @@ export default function HomeScreen({ theme, navigation, route, toggleTheme }) {
 
         {eventsError ? (
           <Text style={[styles.homeSubtitle, { color: theme.soft }]}>
-            Mostrando eventos locais enquanto a API não responde.
+            Falha na sincronização: {eventsError}. Exibindo apenas demonstrações, sem inscrições.
+          </Text>
+        ) : null}
+        {eventsError ? (
+          <TouchableOpacity onPress={refreshEvents} accessibilityRole="button">
+            <Text style={[styles.homeSubtitle, { color: theme.text }]}>Tentar novamente</Text>
+          </TouchableOpacity>
+        ) : null}
+        {filteredEvents.some((event) => event.isDemo) ? (
+          <Text style={[styles.homeSubtitle, { color: theme.soft }]}>
+            Demonstração: eventos fictícios, sem inscrição ou ingresso real.
           </Text>
         ) : null}
 

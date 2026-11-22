@@ -51,7 +51,7 @@ export default function MiniEvent({ e, theme, navigation }) {
 
         {/* título */}
         <Text numberOfLines={1} style={styles.miniTitle}>
-          {e.title}
+          {e.isDemo ? "[Demonstração] " : ""}{e.title}
         </Text>
 
         {/* infos */}

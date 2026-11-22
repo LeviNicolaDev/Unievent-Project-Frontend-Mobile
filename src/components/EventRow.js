@@ -38,7 +38,7 @@ export default function EventRow({ e, navigation }) {
       {/* CONTEÚDO */}
       <View style={styles.rowContent}>
         <Text numberOfLines={2} style={styles.rowTitle}>
-          {e.title}
+          {e.isDemo ? "[Demonstração] " : ""}{e.title}
         </Text>
 
         <View style={styles.rowInfo}>
