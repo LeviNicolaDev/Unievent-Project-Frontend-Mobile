@@ -5,16 +5,25 @@
   },
   "build": {
     "development": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://unievent-api-homolog.happyisland-61c77244.canadacentral.azurecontainerapps.io"
+      },
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://unievent-api-homolog.happyisland-61c77244.canadacentral.azurecontainerapps.io"
+      },
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://unievent-api-homolog.happyisland-61c77244.canadacentral.azurecontainerapps.io"
+      },
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"

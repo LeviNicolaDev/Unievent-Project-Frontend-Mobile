@@ -4,7 +4,7 @@ import defaultStudentPhoto from "../../assets/icon.png";
 import { events as fallbackEvents } from "../data/events";
 
 const FALLBACK_API_ORIGIN =
-  Platform.OS === "android" ? "http://10.0.2.2:5227" : "http://localhost:5227";
+  "https://unievent-api-homolog.happyisland-61c77244.canadacentral.azurecontainerapps.io";
 
 function normalizeApiOrigin(value) {
   const configuredOrigin = value?.replace(/\/api\/?$/, "").replace(/\/$/, "");
