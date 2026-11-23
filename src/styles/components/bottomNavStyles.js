@@ -5,7 +5,7 @@ export const bottomNavStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-    height: 110,
+    height: 70,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
     flexDirection: "row",
