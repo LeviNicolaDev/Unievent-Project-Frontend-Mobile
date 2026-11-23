@@ -81,3 +81,11 @@ test("preferences use authenticated GET and PUT with selected categories and rep
   status = 500;
   await assert.rejects(preferencesApi.update("student-token", payload), /Falha ao salvar preferencias/);
 });
+
+test("new API categories use the labels available in the home filters", async () => {
+  const { mapApiEvent } = await loadApi();
+  for (const [category, label] of [["curso", "Cursos"], ["musica", "Música"], ["hackathon", "Hackathon"]]) {
+    assert.equal(mapApiEvent({ id: 1, nome: "Evento", categoria: category,
+      dataEvento: "2026-12-01T18:00:00Z" }).category, label);
+  }
+});

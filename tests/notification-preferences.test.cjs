@@ -42,3 +42,11 @@ test("saving and reloading keeps the selected categories and permits clearing al
   assert.deepEqual(Array.from(reloaded.categorias), ["Palestra", "Workshop"]);
   assert.deepEqual(Array.from(normalizeNotificationPreferences({ ...selected, categorias: [] }).categorias), []);
 });
+
+test("all eight event types are selectable, including courses, music and hackathons", async () => {
+  const { INTEREST_CATEGORIES, normalizeNotificationPreferences } = await preferencesUtil();
+  assert.deepEqual(Array.from(INTEREST_CATEGORIES, item => item.value),
+    ["Palestra", "Workshop", "Feira", "Evento", "Festa", "Curso", "Musica", "Hackathon"]);
+  const normalized = normalizeNotificationPreferences({ categorias: ["Curso", "Música", "hackathon"] });
+  assert.deepEqual(Array.from(normalized.categorias), ["Curso", "Musica", "Hackathon"]);
+});

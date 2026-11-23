@@ -4,13 +4,16 @@ export const INTEREST_CATEGORIES = [
   { value: "Feira", label: "Feiras" },
   { value: "Evento", label: "Eventos" },
   { value: "Festa", label: "Festas" },
+  { value: "Curso", label: "Cursos" },
+  { value: "Musica", label: "Música" },
+  { value: "Hackathon", label: "Hackathon" },
 ];
 
 export function normalizeNotificationPreferences(item = {}) {
   item = item || {};
   const raw = item.categorias ?? item.Categorias ?? [];
   const values = (Array.isArray(raw) ? raw : String(raw).split(","))
-    .map(value => String(value).trim().toLowerCase());
+    .map(value => String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase());
   return {
     lembretesEventos: item.lembretesEventos ?? item.LembretesEventos ?? true,
     alertasCertificados: item.alertasCertificados ?? item.AlertasCertificados ?? true,

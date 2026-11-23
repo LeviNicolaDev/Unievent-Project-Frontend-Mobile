@@ -197,6 +197,9 @@ function formatCategory(value) {
     feira: "Feiras",
     evento: "Eventos",
     festa: "Festas",
+    curso: "Cursos",
+    musica: "Música",
+    hackathon: "Hackathon",
   };
 
   return labels[normalized] || String(value || "Evento");

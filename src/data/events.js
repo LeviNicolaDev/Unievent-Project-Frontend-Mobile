@@ -15,6 +15,9 @@ export const categoryFilters = [
   "Música",
   "Workshop",
   "Hackathon",
+  "Feiras",
+  "Eventos",
+  "Festas",
 ];
 
 export const categoryFilterMap = {
