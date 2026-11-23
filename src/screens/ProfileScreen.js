@@ -1,3 +1,4 @@
+import ProfileInterests from "../components/ProfileInterests";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
@@ -32,20 +33,9 @@ export default function ProfileScreen({
 }) {
   const isLight = theme.mode === "light";
   const [modalVisible, setModalVisible] = useState(false);
-  const { student } = useAuth();
+  const { student, token } = useAuth();
   const { events, favoriteEvents, registeredEvents } = useEvents();
   const birthDateLabel = formatDateForInput(student?.dataNascimento);
-
-  const tags = [
-    "Palestras",
-    "Workshop",
-    "E-Sportes",
-    "Música",
-    "Cursos",
-    "Oficina",
-    "Hackathon",
-    "Feiras",
-  ];
 
   return (
     <Screen theme={theme} bg={isLight ? LIGHT_BG : BLACK}>
@@ -157,29 +147,8 @@ export default function ProfileScreen({
           Gostos
         </Text>
 
-        <View style={styles.profileTags}>
-          {tags.map((tag) => (
-            <View
-              key={tag}
-              style={[
-                styles.profileTag,
-                {
-                  borderColor: isLight ? BLACK : ORANGE,
-                  backgroundColor: isLight ? "transparent" : "#1A1A1A",
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.profileTagText,
-                  { color: isLight ? BLACK : "#FFFFFF" },
-                ]}
-              >
-                {tag}
-              </Text>
-            </View>
-          ))}
-        </View>
+        <ProfileInterests token={token} theme={theme}
+          onEdit={() => navigation.navigate("Settings")} />
       </ScrollView>
 
       <EditProfileModal

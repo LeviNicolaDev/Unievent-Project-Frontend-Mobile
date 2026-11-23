@@ -50,3 +50,11 @@ test("all eight event types are selectable, including courses, music and hackath
   const normalized = normalizeNotificationPreferences({ categorias: ["Curso", "Música", "hackathon"] });
   assert.deepEqual(Array.from(normalized.categorias), ["Curso", "Musica", "Hackathon"]);
 });
+
+test("missing or empty saved interests never select the full category catalog", async () => {
+  const { normalizeNotificationPreferences } = await preferencesUtil();
+  for (const response of [null, {}, { categorias: null }, { categorias: "" },
+    { categorias: [] }, { Categorias: "" }]) {
+    assert.deepEqual(Array.from(normalizeNotificationPreferences(response).categorias), []);
+  }
+});
