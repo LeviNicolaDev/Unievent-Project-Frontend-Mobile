@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test": "node --experimental-vm-modules --test tests/*.test.cjs",
     "start": "expo start --offline",
     "start:online": "expo start",
     "android": "expo start --android --offline",

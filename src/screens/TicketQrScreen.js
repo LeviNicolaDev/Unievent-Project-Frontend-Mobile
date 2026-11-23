@@ -1,8 +1,11 @@
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useEffect, useState } from "react";
 
+import CancelRegistrationButton from '../components/CancelRegistrationButton';
 import BottomNav from "../components/BottomNav";
 import Screen from "../components/Screen";
 import { BLACK, LIGHT_BG, ORANGE } from "../constants/theme";
@@ -19,12 +22,15 @@ export default function TicketQrScreen({ theme, navigation, route }) {
     hasAttended,
     hasIssuedCertificate,
     refreshEvents,
+    isCancelled,
   } = useEvents();
   const { token } = useAuth();
+  useFocusEffect(useCallback(() => { void refreshEvents(); }, [refreshEvents]));
   const event = getEventById(route.params?.eventId);
   const [ticketCode, setTicketCode] = useState(null);
   const [ticketError, setTicketError] = useState(null);
   const attended = event ? hasAttended(event.id) : false;
+  const cancelled = event ? isCancelled(event.id) : false;
   const qrRead = attended;
   const certificateIssued = event ? hasIssuedCertificate(event.id) : false;
 
@@ -32,12 +38,15 @@ export default function TicketQrScreen({ theme, navigation, route }) {
     let active = true;
     setTicketCode(null);
     setTicketError(null);
-    if (!event || event.isDemo || !token) return;
+    if (!event || event.isDemo || !token || cancelled) return;
     eventsApi.getTicket(event.id, token)
-      .then((ticket) => active && setTicketCode(ticket.codigoIngresso ?? ticket.CodigoIngresso))
+      .then((ticket) => {
+        if (active && String(ticket.statusInscricao ?? ticket.StatusInscricao).toLowerCase() !== "cancelada")
+          setTicketCode(ticket.codigoIngresso ?? ticket.CodigoIngresso);
+      })
       .catch((error) => active && setTicketError(error.message));
     return () => { active = false; };
-  }, [event?.id, event?.isDemo, token]);
+  }, [event?.id, event?.isDemo, token, cancelled]);
 
   if (!event || event.isDemo) {
     return (
@@ -99,16 +108,19 @@ export default function TicketQrScreen({ theme, navigation, route }) {
               size={210}
               backgroundColor="#FFFFFF"
               color="#000000"
-            /> : <Text>{ticketError || "Carregando ingresso..."}</Text>}
+            /> : <Text>{cancelled ? "Inscrição cancelada" : ticketError || "Carregando ingresso..."}</Text>}
           </View>
 
           {ticketCode ? <Text style={styles.qrCodeText}>Código: {ticketCode}</Text> : null}
 
           <Text style={styles.qrHelpText}>
-            Apresente este QR Code na entrada do evento para validar seu
-            ingresso.
+            {cancelled ? "Sua inscrição foi cancelada. Este ingresso não permite check-in." : "Apresente este QR Code na entrada do evento para validar seu ingresso."}
           </Text>
 
+          {!cancelled && !attended && ticketCode && (
+            <CancelRegistrationButton eventId={event.id} theme={theme}
+              onCancelled={() => navigation.navigate("Ticket")} />
+          )}
           <TouchableOpacity onPress={refreshEvents} accessibilityRole="button">
             <Text style={styles.qrHelpText}>Atualizar presença</Text>
           </TouchableOpacity>
@@ -161,7 +173,7 @@ export default function TicketQrScreen({ theme, navigation, route }) {
                   </View>
                 )}
               </>
-            ) : <Text style={styles.qrHelpText}>A presença será confirmada por um operador na entrada.</Text>}
+            ) : !cancelled ? <Text style={styles.qrHelpText}>A presença será confirmada por um operador na entrada.</Text> : null}
           </View>
         </View>
       </View>

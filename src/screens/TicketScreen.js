@@ -1,3 +1,5 @@
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -12,7 +14,8 @@ import { filterEventsByCategory } from "../utils/eventFilters";
 
 export default function TicketScreen({ theme, navigation, route }) {
   const isLight = theme.mode === "light";
-  const { registeredEvents, categoryFilters } = useEvents();
+  const { registeredEvents, categoryFilters, refreshEvents } = useEvents();
+  useFocusEffect(useCallback(() => { void refreshEvents(); }, [refreshEvents]));
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("Todos");
   const filteredEvents = filterEventsByCategory(

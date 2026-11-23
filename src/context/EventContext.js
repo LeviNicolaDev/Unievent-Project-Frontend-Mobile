@@ -76,6 +76,7 @@ export function EventProvider({ children }) {
   const [eventsError, setEventsError] = useState(null);
   const [favoriteIds, setFavoriteIds] = useState([]);
   const [registeredIds, setRegisteredIds] = useState([]);
+  const [cancelledIds, setCancelledIds] = useState([]);
   const [attendedIds, setAttendedIds] = useState([]);
   const [certificateIds, setCertificateIds] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("Todos");
@@ -98,6 +99,7 @@ export function EventProvider({ children }) {
       setEventsError(null);
       setEventItems([]);
       setRegisteredIds([]);
+      setCancelledIds([]);
       setAttendedIds([]);
       setCertificateIds([]);
       setInstitutionFilters([]);
@@ -106,20 +108,23 @@ export function EventProvider({ children }) {
         if (!token) {
           setEventItems(fallbackEvents);
           setRegisteredIds([]);
+          setCancelledIds([]);
           setAttendedIds([]);
           setCertificateIds([]);
           return;
         }
 
-        const [apiEvents, apiCertificates, apiInstitutions] = await Promise.all([
+        const [apiEvents, apiCertificates, apiInstitutions, apiTickets] = await Promise.all([
           eventsApi.list(token, { instituicaoId: selectedInstitutionId }),
           certificatesApi.list(token),
           institutionsApi.listPublic().catch(() => []),
+          eventsApi.listTickets(token),
         ]);
 
         if (isMounted) {
           setEventItems(attachCertificatesToEvents(apiEvents, apiCertificates));
-          setRegisteredIds(apiCertificates.map(c => c.eventId));
+          setRegisteredIds(apiTickets.filter(t => String(t.statusInscricao).toLowerCase() !== "cancelada").map(t => asId(t.eventoId)));
+          setCancelledIds(apiTickets.filter(t => String(t.statusInscricao).toLowerCase() === "cancelada").map(t => asId(t.eventoId)));
           setAttendedIds(apiCertificates.filter(c => c.presencaConfirmada).map(c => c.eventId));
           setCertificateIds(apiCertificates.filter(c => c.pdfDisponivel).map(c => c.eventId));
         }
@@ -131,6 +136,7 @@ export function EventProvider({ children }) {
           setEventsError(error.message);
           setEventItems(fallbackEvents);
           setRegisteredIds([]);
+          setCancelledIds([]);
           setAttendedIds([]);
           setCertificateIds([]);
         }
@@ -314,28 +320,41 @@ export function EventProvider({ children }) {
       if (!token) {
         setEventItems(fallbackEvents);
         setRegisteredIds([]);
+        setCancelledIds([]);
         setAttendedIds([]);
         setCertificateIds([]);
         return;
       }
-      const [apiEvents, apiCertificates] = await Promise.all([
+      const [apiEvents, apiCertificates, apiTickets] = await Promise.all([
         eventsApi.list(token, { instituicaoId: selectedInstitutionId }),
         certificatesApi.list(token),
+        eventsApi.listTickets(token),
       ]);
       setEventItems(attachCertificatesToEvents(apiEvents, apiCertificates));
-      setRegisteredIds(apiCertificates.map(c => c.eventId));
+      setRegisteredIds(apiTickets.filter(t => String(t.statusInscricao).toLowerCase() !== "cancelada").map(t => asId(t.eventoId)));
+      setCancelledIds(apiTickets.filter(t => String(t.statusInscricao).toLowerCase() === "cancelada").map(t => asId(t.eventoId)));
       setAttendedIds(apiCertificates.filter(c => c.presencaConfirmada).map(c => c.eventId));
       setCertificateIds(apiCertificates.filter(c => c.pdfDisponivel).map(c => c.eventId));
     } catch (error) {
+      // A refresh failure must not undo a successful cancellation or replace server data.
       setEventsError(error.message);
-      setEventItems(fallbackEvents);
-      setRegisteredIds([]);
-      setAttendedIds([]);
-      setCertificateIds([]);
     } finally {
       setEventsLoading(false);
     }
   }, [selectedInstitutionId, token]);
+
+  const isCancelled = useCallback(
+    (eventId) => cancelledIds.includes(asId(eventId)), [cancelledIds]
+  );
+
+  const cancelRegistration = useCallback(async (eventId) => {
+    if (!token) throw new Error("Faça login para cancelar sua inscrição.");
+    const id = asId(eventId);
+    await eventsApi.cancelRegistration(id, token);
+    setRegisteredIds(current => current.filter(value => value !== id));
+    setCancelledIds(current => current.includes(id) ? current : [...current, id]);
+    await refreshEvents();
+  }, [token, refreshEvents]);
 
   const value = useMemo(
     () => ({
@@ -359,6 +378,8 @@ export function EventProvider({ children }) {
       registeredEvents,
       isRegistered,
       registerForEvent,
+      cancelRegistration,
+      isCancelled,
       attendedIds,
       attendedEvents,
       refreshEvents,
@@ -392,6 +413,8 @@ export function EventProvider({ children }) {
       selectedCategory,
       toggleFavorite,
       registerForEvent,
+      cancelRegistration,
+      isCancelled,
     ]
   );
 

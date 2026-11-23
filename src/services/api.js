@@ -227,7 +227,9 @@ function formatAudience(value, institutionName) {
 }
 
 function formatDateParts(value) {
-  const date = new Date(value);
+  const text = String(value || "");
+  const date = new Date(/(?:Z|[+-]\d{2}:\d{2})$/i.test(text)
+    ? text : `${text.includes("T") ? text : `${text}T00:00:00`}-03:00`);
 
   if (Number.isNaN(date.getTime())) {
     return {
@@ -239,12 +241,14 @@ function formatDateParts(value) {
   }
 
   const dateLabel = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: 'America/Sao_Paulo',
     day: "2-digit",
     month: "long",
     year: "numeric",
   }).format(date);
   const timeLabel = new Intl.DateTimeFormat("pt-BR", {
-    hour: "2-digit",
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
     minute: "2-digit",
   }).format(date);
 
@@ -409,6 +413,12 @@ export const eventsApi = {
       method: "POST",
       token,
     });
+  },
+  cancelRegistration(eventId, token) {
+    return apiFetch(`/Evento/${eventId}/inscricao`, { method: "DELETE", token });
+  },
+  listTickets(token) {
+    return apiFetch("/Evento/meus-ingressos", { token });
   },
   getTicket(eventId, token) {
     return apiFetch(`/Evento/${eventId}/ingresso`, { token });

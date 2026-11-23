@@ -1,7 +1,10 @@
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+import CancelRegistrationButton from '../components/CancelRegistrationButton';
 import BottomNav from "../components/BottomNav";
 import EventImage from "../components/EventImage";
 import Screen from "../components/Screen";
@@ -26,8 +29,12 @@ export default function DetailsScreen({
     toggleFavorite,
     isRegistered,
     registerForEvent,
+    hasAttended,
+    isCancelled,
+    refreshEvents,
   } = useEvents();
   const event = getEventById(route.params?.eventId);
+  useFocusEffect(useCallback(() => { void refreshEvents(); }, [refreshEvents]));
   if (!event) {
     return (
       <Screen theme={theme} bg={isLight ? LIGHT_BG : BLACK}>
@@ -171,7 +178,7 @@ export default function DetailsScreen({
         </Text>
 
         {!event.isDemo ? <TouchableOpacity
-          disabled={registering || isDifferentInstitution}
+          disabled={registering || isDifferentInstitution || isCancelled(event.id)}
           style={[
             styles.garantedButton,
             {
@@ -182,7 +189,7 @@ export default function DetailsScreen({
           onPress={handleTicketPress}
         >
           <Text style={styles.garantedText}>
-            {isDifferentInstitution
+            {isCancelled(event.id) ? "Inscrição cancelada" : isDifferentInstitution
               ? "Inscrição indisponível"
               : registering
               ? "Garantindo..."
@@ -191,6 +198,9 @@ export default function DetailsScreen({
               : "Garantir ingresso"}
           </Text>
         </TouchableOpacity> : null}
+        {registered && !hasAttended(event.id) && (
+          <CancelRegistrationButton eventId={event.id} theme={theme} />
+        )}
         {restrictionMessage ? (
           <Text style={[styles.aboutText, { color: theme.soft }]}>
             {restrictionMessage}
