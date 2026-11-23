@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
 import BottomNav from "../components/BottomNav";
@@ -7,7 +7,7 @@ import Screen from "../components/Screen";
 import { BLACK, LIGHT_BG, ORANGE } from "../constants/theme";
 import { styles } from "../styles/globalStyles";
 import { useAuth } from "../context/AuthContext";
-import { preferencesApi } from "../services/api";
+import NotificationPreferences from "../components/NotificationPreferences";
 
 export default function SettingsScreen({
   theme,
@@ -20,40 +20,7 @@ export default function SettingsScreen({
   const [highContrast, setHighContrast] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(true);
   const [screenReaderHints, setScreenReaderHints] = useState(true);
-  const [eventReminders, setEventReminders] = useState(true);
-  const [certificateAlerts, setCertificateAlerts] = useState(true);
-  const [favoriteSuggestions, setFavoriteSuggestions] = useState(true);
   const { token } = useAuth();
-  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
-  const [remotePreferences, setRemotePreferences] = useState(null);
-
-  useEffect(() => {
-    if (!token) return;
-    preferencesApi.get(token).then((item) => {
-      setRemotePreferences(item);
-      setEventReminders(item.lembretesEventos ?? item.LembretesEventos ?? true);
-      setCertificateAlerts(item.alertasCertificados ?? item.AlertasCertificados ?? true);
-      setFavoriteSuggestions(item.recomendacoes ?? item.Recomendacoes ?? true);
-      setPreferencesLoaded(true);
-    }).catch(() => setPreferencesLoaded(true));
-  }, [token]);
-
-  useEffect(() => {
-    if (!token || !preferencesLoaded) return;
-    const timeout = setTimeout(() => {
-      preferencesApi.update(token, {
-        lembretesEventos: eventReminders,
-        alertasCertificados: certificateAlerts,
-        recomendacoes: favoriteSuggestions,
-        usarLocalizacao: remotePreferences?.usarLocalizacao ?? remotePreferences?.UsarLocalizacao ?? false,
-        categorias: String(remotePreferences?.categorias ?? remotePreferences?.Categorias ?? '').split(',').filter(Boolean),
-        latitudeAproximada: remotePreferences?.latitudeAproximada ?? remotePreferences?.LatitudeAproximada ?? null,
-        longitudeAproximada: remotePreferences?.longitudeAproximada ?? remotePreferences?.LongitudeAproximada ?? null,
-        raioKm: remotePreferences?.raioKm ?? remotePreferences?.RaioKm ?? 30,
-      }).catch(() => null);
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [token, preferencesLoaded, remotePreferences, eventReminders, certificateAlerts, favoriteSuggestions]);
 
   const accessibilityItems = [
     {
@@ -83,30 +50,6 @@ export default function SettingsScreen({
       description: "Prioriza labels claros em ações e ingressos.",
       value: screenReaderHints,
       onValueChange: setScreenReaderHints,
-    },
-  ];
-
-  const notificationItems = [
-    {
-      icon: "notifications-outline",
-      title: "Lembretes de eventos",
-      description: "Avise antes dos eventos inscritos começarem.",
-      value: eventReminders,
-      onValueChange: setEventReminders,
-    },
-    {
-      icon: "document-text-outline",
-      title: "Avisos de certificado",
-      description: "Notifique quando um certificado puder ser emitido.",
-      value: certificateAlerts,
-      onValueChange: setCertificateAlerts,
-    },
-    {
-      icon: "heart-outline",
-      title: "Sugestões por favoritos",
-      description: "Use seus interesses para destacar eventos parecidos.",
-      value: favoriteSuggestions,
-      onValueChange: setFavoriteSuggestions,
     },
   ];
 
@@ -176,10 +119,8 @@ export default function SettingsScreen({
           ))}
         </SettingsSection>
 
-        <SettingsSection title="Notificações" theme={theme}>
-          {notificationItems.map((item) => (
-            <SettingsToggle key={item.title} {...item} theme={theme} />
-          ))}
+        <SettingsSection title="Notificações e interesses" theme={theme}>
+          <NotificationPreferences token={token} theme={theme} />
         </SettingsSection>
 
         <SettingsSection title="Conta" theme={theme}>

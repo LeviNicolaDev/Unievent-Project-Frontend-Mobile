@@ -60,3 +60,24 @@ test("registrations are loaded from tickets, including cancelled history", async
   });
   assert.equal((await eventsApi.listTickets("student-token"))[0].statusInscricao, "cancelada");
 });
+
+test("preferences use authenticated GET and PUT with selected categories and report API errors", async () => {
+  const calls = [];
+  let status = 200;
+  const { preferencesApi } = await loadApi(async (url, options) => {
+    calls.push({ url, ...options });
+    return new Response(JSON.stringify(status === 200
+      ? { categorias: "Palestra,Workshop", lembretesEventos: true, recomendacoes: true }
+      : ["Falha ao salvar preferencias"]), { status });
+  });
+  assert.equal((await preferencesApi.get("student-token")).categorias, "Palestra,Workshop");
+  const payload = { categorias: ["Palestra", "Workshop"], lembretesEventos: true,
+    alertasCertificados: true, recomendacoes: true, usarLocalizacao: false, raioKm: 30 };
+  await preferencesApi.update("student-token", payload);
+  assert.match(calls[1].url, /\/api\/me\/preferencias$/);
+  assert.equal(calls[1].method, "PUT");
+  assert.equal(calls[1].headers.Authorization, "Bearer student-token");
+  assert.deepEqual(JSON.parse(calls[1].body), payload);
+  status = 500;
+  await assert.rejects(preferencesApi.update("student-token", payload), /Falha ao salvar preferencias/);
+});
